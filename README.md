@@ -8,6 +8,6 @@ https://threejs.org/docs/index.html#manual/en/introduction/Installation
 
 // vite
 
-npm install --save-dev vite
+<code>npm install --save-dev vite</code>
 
-npx vite
+<code>npx vite</code>

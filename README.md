@@ -4,7 +4,7 @@ https://threejs.org/docs/index.html#manual/en/introduction/Installation
 
 // three.js
 
-npm install --save three
+<code>npm install --save three</code>
 
 // vite
 

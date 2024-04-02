@@ -27,14 +27,15 @@ fetch("data.csv")
   .then((data) => {
     const lines = data.split("\n").slice(1); // Erste Zeile überspringen (Header)
     lines.forEach((line) => {
-      const [id, x, y, z] = line.split(",").map(Number);
+      const [id, x1, y1, z1, x2, y2, z2] = line.split(",").map(Number);
 
-      const origin = new THREE.Vector3(x, y, z);
-      const direction = new THREE.Vector3(1, 0, 0); // Richtung des Pfeils (z.B. x-Achse)
+      const startPoint = new THREE.Vector3(x1, y1, z1);
+      const endPoint = new THREE.Vector3(x2, y2, z2);
+      const direction = endPoint.clone().sub(startPoint);
 
       const arrowHelper = new THREE.ArrowHelper(
-        direction,
-        origin,
+        direction.normalize(),
+        startPoint,
         direction.length(),
         0xffff00
       );

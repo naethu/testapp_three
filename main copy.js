@@ -29,14 +29,14 @@ fetch("data.csv")
     lines.forEach((line) => {
       const [id, x, y, z] = line.split(",").map(Number);
 
-      const origin = new THREE.Vector3(0, 0, 0);
-      const direction = new THREE.Vector3(x, y, z);
+      const origin = new THREE.Vector3(x, y, z);
+      const direction = new THREE.Vector3(1, 0, 0); // Richtung des Pfeils (z.B. x-Achse)
 
       const arrowHelper = new THREE.ArrowHelper(
         direction,
         origin,
         direction.length(),
-        0xff0000
+        0xffff00
       );
       scene.add(arrowHelper);
     });

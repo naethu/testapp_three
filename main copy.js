@@ -5,20 +5,27 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Hintergrundfarbe des Renderers auf weiss setzen
+renderer.setClearColor(0xfefefe);
+
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
-  75,
+  45,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.set(0, 2, 5);
 
 const orbit = new OrbitControls(camera, renderer.domElement);
+
+camera.position.set(0, 8, 14);
 orbit.update();
 
-const axesHelper = new THREE.AxesHelper(5);
+const gridHelper = new THREE.GridHelper(10, 10);
+scene.add(gridHelper);
+
+const axesHelper = new THREE.AxesHelper(2);
 scene.add(axesHelper);
 
 // Laden der Daten aus der Datei
@@ -27,16 +34,17 @@ fetch("data.csv")
   .then((data) => {
     const lines = data.split("\n").slice(1); // Erste Zeile überspringen (Header)
     lines.forEach((line) => {
-      const [id, x, y, z] = line.split(",").map(Number);
+      const [id, x1, y1, z1, x2, y2, z2] = line.split(",").map(Number);
 
-      const origin = new THREE.Vector3(x, y, z);
-      const direction = new THREE.Vector3(1, 0, 0); // Richtung des Pfeils (z.B. x-Achse)
+      const startPoint = new THREE.Vector3(x1, y1, z1);
+      const endPoint = new THREE.Vector3(x2, y2, z2);
+      const direction = endPoint.clone().sub(startPoint);
 
       const arrowHelper = new THREE.ArrowHelper(
-        direction,
-        origin,
+        direction.normalize(),
+        startPoint,
         direction.length(),
-        0xffff00
+        0xffa500
       );
       scene.add(arrowHelper);
     });

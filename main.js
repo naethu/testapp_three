@@ -1,81 +1,71 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-let scene, camera, renderer, controls;
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// Initialize scene, camera, and renderer
-scene = new THREE.Scene();
-camera = new THREE.PerspectiveCamera(
-  45,
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.set(0, 5, 10);
+camera.position.set(0, 2, 5);
 
-renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.update();
 
-// OrbitControls for camera movement
-controls = new OrbitControls(camera, renderer.domElement);
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
 
-// GLTF Loader
-const loader = new GLTFLoader();
+// Laden der Daten aus der Datei
+fetch("data/data.csv")
+  .then((response) => response.text())
+  .then((data) => {
+    const lines = data.split("\n").slice(1); // Erste Zeile überspringen (Header)
+    lines.forEach((line) => {
+      const [id, x1, y1, z1, x2, y2, z2] = line.split(",").map(Number);
 
-// Optional: Provide a DRACOLoader instance to decode compressed mesh data
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("/node_modules/three/examples/js/libs/draco/");
-loader.setDRACOLoader(dracoLoader);
+      const startPoint = new THREE.Vector3(x1, y1, z1);
+      const endPoint = new THREE.Vector3(x2, y2, z2);
+      const direction = endPoint.clone().sub(startPoint);
 
-// Set background color of the renderer to white
-renderer.setClearColor(0x888888);
+      const arrowHelper = new THREE.ArrowHelper(
+        direction.normalize(),
+        startPoint,
+        direction.length(),
+        0xffff00
+      );
+      scene.add(arrowHelper);
+    });
+  })
+  .catch((error) => {
+    console.error("Error loading the file:", error);
+  });
 
-// Load a glTF resource
-loader.load(
-  "3d-ansicht.gltf",
-  function (gltf) {
-    // Add loaded scene to our scene
-    scene.add(gltf.scene);
-
-    // Reset scale and position of the model
-    gltf.scene.scale.set(1, 1, 1);
-    gltf.scene.position.set(0, 0, 0);
-
-    // Adjust camera position to view the model
-    camera.lookAt(0, 0, 0);
-
-    gltf.animations; // Array<THREE.AnimationClip>
-    gltf.scene; // THREE.Group
-    gltf.scenes; // Array<THREE.Group>
-    gltf.cameras; // Array<THREE.Camera>
-    gltf.asset; // Object
-  },
-  function (xhr) {
-    console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
-  },
-  function (error) {
-    console.log("An error happened", error);
-  }
-);
-
-// Animate function
 function animate() {
   requestAnimationFrame(animate);
-  controls.update(); // Update OrbitControls
+
+  // Aktualisieren der OrbitControls in der Animationsschleife
+  orbit.update();
+
   renderer.render(scene, camera);
 }
 
-// Resize event
-window.addEventListener("resize", function () {
-  let width = window.innerWidth;
-  let height = window.innerHeight;
+// Reagieren auf Größenänderungen des Fensters
+window.addEventListener("resize", () => {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+
   renderer.setSize(width, height);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
+
+  // Aufrufen der resize Methode von OrbitControls
+  orbit.handleResize();
 });
 
-// Start animation
 animate();
